@@ -1,5 +1,6 @@
 import { exec, spawn, toast } from 'kernelsu-alt';
 import { modDir, superkey } from '../index.js';
+import { handleFileUpload } from './kpm.js';
 
 function uInt2String(ver) {
     const val = typeof ver === 'string' ? parseInt(ver, 16) : ver;
@@ -266,59 +267,46 @@ function openOptionDialog(item) {
 }
 
 async function embedKPM() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.kpm';
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    handleFileUpload('.kpm', 'kpm-embed-list', async (file, base64) => {
+        // Generate random filename
+        const randName = Math.random().toString(36).substring(7) + '.kpm';
+        const tmpPath = `${modDir}/tmp/${randName}`;
+        const writeResult = await exec(`echo '${base64}' | base64 -d > ${tmpPath}`);
 
-        const reader = new FileReader();
-        reader.onload = async function () {
-            const base64 = reader.result.split(',')[1];
+        if (writeResult.errno) {
+            toast("Failed to upload KPM file");
+            return;
+        }
 
-            // Generate random filename
-            const randName = Math.random().toString(36).substring(7) + '.kpm';
-            const tmpPath = `${modDir}/tmp/${randName}`;
-            const writeResult = await exec(`echo '${base64}' | base64 -d > ${tmpPath}`);
+        const result = await exec(`kptools -l -M "${randName}"`, {
+            cwd: `${modDir}/tmp`,
+            env: { PATH: `${modDir}/bin:$PATH` }
+        });
 
-            if (writeResult.errno) {
-                toast("Failed to upload KPM file");
-                return;
-            }
+        if (result.errno) {
+            toast("Invalid KPM file");
+            return;
+        }
 
-            const result = await exec(`kptools -l -M "${randName}"`, {
-                cwd: `${modDir}/tmp`,
-                env: { PATH: `${modDir}/bin:$PATH` }
+        const ini = parseIni(result.stdout);
+        if (ini.kpm) {
+            newExtras.push({
+                type: 'KPM',
+                name: ini.kpm.name,
+                event: 'pre-kernel-init', // default
+                args: '',
+                version: ini.kpm.version,
+                license: ini.kpm.license,
+                author: ini.kpm.author,
+                description: ini.kpm.description,
+                fileName: randName,
+                isNew: true
             });
-
-            if (result.errno) {
-                toast("Invalid KPM file");
-                return;
-            }
-
-            const ini = parseIni(result.stdout);
-            if (ini.kpm) {
-                newExtras.push({
-                    type: 'KPM',
-                    name: ini.kpm.name,
-                    event: 'pre-kernel-init', // default
-                    args: '',
-                    version: ini.kpm.version,
-                    license: ini.kpm.license,
-                    author: ini.kpm.author,
-                    description: ini.kpm.description,
-                    fileName: randName,
-                    isNew: true
-                });
-                renderKpmList();
-            } else {
-                toast("Could not parse KPM info");
-            }
-        };
-        reader.readAsDataURL(file);
-    };
-    input.click();
+            renderKpmList();
+        } else {
+            toast("Could not parse KPM info");
+        }
+    });
 }
 
 function patch(type) {
