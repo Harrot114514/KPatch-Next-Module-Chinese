@@ -125,6 +125,7 @@ async function renderKpmList() {
             dialog.querySelector('.cancel').onclick = () => dialog.close();
             dialog.querySelector('.confirm').onclick = async () => {
                 await controlModule(module.name, textField.value);
+                refreshKpmList();
                 textField.value = '';
                 dialog.close();
             };
