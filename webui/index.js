@@ -41,8 +41,8 @@ async function updateStatus() {
 }
 
 export function escapeShell(cmd) {
-    if (cmd === '' || cmd === null || cmd === undefined) return "''";
-    return "'" + String(cmd).replace(/'/g, "'\\''") + "'";
+    if (cmd === '' || cmd === null || cmd === undefined) return '""';
+    return '"' + cmd.replace(/[\\"$`'[\]]/g, '\\$&') + '"';
 }
 
 function updateSuperkey(key) {
@@ -51,11 +51,10 @@ function updateSuperkey(key) {
         field.value = key;
     });
     localStorage.setItem('kp-next_superkey', key);
-    const safeKey = escapeShell(key);
     exec(`
-        key=${safeKey}
+        key="${btoa(key)}"
         if [ -n "$key" ]; then
-            printf "%s" "$key" | base64 -w0 > /data/adb/kp-next/key
+            echo "$key" > /data/adb/kp-next/key
             if [ -f "${modDir}/unresolved" ]; then
                 rm -f "${modDir}/unresolved"
                 busybox nohup sh "${modDir}/service.sh" &
