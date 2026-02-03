@@ -1,6 +1,7 @@
-# KPatch Next Module
+# KPatch Next Module Chinese
 
 Standalone implementation of KPM support for Magisk/KernelSU
+But 更适合中国宝宝
 
 ---
 
