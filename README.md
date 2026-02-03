@@ -1,6 +1,6 @@
 # KPatch Next Module
 
-Standalone implementation of KPM support for Magisk/KernelSU
+Standalone implementation of KPM support for Magisk/KernelSU  but更适合中国宝宝的体质
 
 ---
 
