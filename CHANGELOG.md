@@ -1,4 +1,4 @@
-# KPatch Next Module
+# KPatch Next Module Chinese
 
-## Changelog
+## 更新日志
 
