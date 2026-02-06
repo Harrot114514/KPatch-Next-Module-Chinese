@@ -1,7 +1,6 @@
 # KPatch Next Module Chinese
 
-在 Magisk/KernelSU中 实现 KPM 加载
-  请尊重原作者！
+在 Magisk/KernelSU中 实现 KPM 加载<br>请尊重原作者！
 ---
 
 ## 制作人员
